@@ -1,0 +1,74 @@
+require 'find'
+require 'json'
+class PathDecomposer
+  def initialize(path, exclusion_regex = /\..*\//)
+    @path_map = {}
+    @extention_types = Hash.new(0)
+    @path = path
+    @exclusion_regex = exclusion_regex
+    build_hash_of_extentions
+  end
+
+  def output_extention_types_and_counts(filename)
+    begin
+      file = File.open(filename, "w+") 
+      get_sorted_extention_list.each do |key, value|
+        file << "#{key}\t#{value}\n"
+      end
+    rescue => error
+      puts error
+    ensure
+      file.close
+    end
+  end
+
+  def output_extention_types_and_counts_to_json(filename)
+    begin
+      file = File.open(filename, "w") 
+      file << JSON.generate(@extention_types)
+    rescue => error
+      puts error
+    end
+  end
+
+  private
+
+    def build_hash_of_extentions
+      Find.find(@path) do |directories_and_files|
+        if File.file?(directories_and_files)
+          filename = directories_and_files
+          build_hash_of_extentions_and_count(filename)
+        end
+      end
+    end
+
+    def build_hash_of_extentions_and_count(filename)
+      file_parts = filename.split(".")
+      if filename !~ @exclusion_regex
+        if file_parts.length > 1
+          extention = file_parts.last
+          @extention_types[:"#{extention}"] += 1
+        else 
+          @extention_types[:"no_extention"] += 1    
+        end
+      end
+    end
+
+    def get_sorted_extention_list
+      @extention_types.sort_by {|k,v| -v}
+    end
+
+end
+
+
+
+    # puts "total: #{@extention_types.values.reduce(:+)}"
+    # b = @extention_types.values.reduce(:+)
+    # temp = @extention_types
+    # temp.delete(:no_extention)
+    # a = temp.values.reduce(:+)
+    # dif = b - a
+    # puts "total without no_extention: #{temp.values.reduce(:+)}"
+    # puts "dif: #{dif}"
+
+
