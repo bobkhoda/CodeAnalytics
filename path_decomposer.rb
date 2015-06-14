@@ -2,6 +2,7 @@ require 'find'
 require 'json'
 class PathDecomposer
   def initialize(path, exclusion_regex = /\..*\//)
+    @all_path_contents = Find.find(@path)
     @path_map = {}
     @extention_types = Hash.new(0)
     @path = path
@@ -31,10 +32,14 @@ class PathDecomposer
     end
   end
 
+  def get_total_file_count
+    @extention_types.values.reduce(:+)
+  end
+
   private
 
     def build_hash_of_extentions
-      Find.find(@path) do |directories_and_files|
+      @all_path_contents do |directories_and_files|
         if File.file?(directories_and_files)
           filename = directories_and_files
           build_hash_of_extentions_and_count(filename)
