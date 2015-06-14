@@ -1,93 +1,52 @@
-
-# class TV
-#   def turnOn
-#     context.turnOn
-#   end
-#   def turnOff
-#     context.turnOff
+#"TV" 
+# class TVAbstraction
+#   def toggle(TVController)
 #   end
 # end
 
-# class On::TV
-#   def turnOn
-#     puts "on"
-#     return self
-#   end
-#   def turnOff
-#     puts "off"
-#     return self
-#   end
-# end
+#"On" 
+class On #< TVAbstraction
+  def toggle(tv_controller)
+    puts "On -> Off"
+    tv_controller.state = Off.new
+  end
+end
 
-# class Off::TV
-#   def turnOn
-#     puts "on"
-#     return self
-#   end
+#"Off" 
+class Off #< TVAbstraction
+  def toggle(tv_controller)
+    puts "Off -> On"
+    tv_controller.state = On.new
+  end
+end
 
-#   def turnOff
-#     return self
-#   end
-# end
-
-# class Context
-#   attr_accessor :currentState
-#   def initialize
-#     @currentState = TV.new
-#   end 
-#   def turnOn
-#     @currentState = @currentState.turnOn
-#   end
-
-#   def turnOff
-#     @currentState = @currentState.turnOff
-#   end
-# end
-
-# c = Context.new
-# c.turnOn
-  #// "State" 
-  class State
-    def Handle(context)
-    end
+#"TVController" 
+class TVController
+  #Constructor 
+  attr_accessor :state
+  def initialize(state)
+    @state = state;
   end
 
-  #// "ConcreteStateA" 
-  class ConcreteStateA < State
-    def Handle(context)
-      puts "A -> B"
-      context.state = ConcreteStateB.new
-    end
+  def push_power_button
+    state.toggle(self);
+  end
+end
+
+class UserOfTVController
+#Setup TVController in an initial state 
+  def initialize
+    @tv_controller = TVController.new(Off.new)
   end
 
-  #// "ConcreteStateB" 
-  class ConcreteStateB < State
-    def Handle(context)
-      puts "B -> A"
-      context.state = ConcreteStateA.new
-    end
+  def use_controller
+    #call push_power_buttons, which toggles state 
+    @tv_controller.push_power_button()
+    @tv_controller.push_power_button()
+    @tv_controller.push_power_button()
+    @tv_controller.push_power_button()
   end
+end
 
-  #// "Context" 
-  class Context
-    #// Constructor 
-    def initialize(state)
-      @state = state;
-    end
-    attr_accessor :state
-
-    def Request
-      state.Handle(self);
-    end
-  end
-
-# class MainApp
-  #// Setup context in a state 
-  c = Context.new(ConcreteStateA.new)
-
-  #// Issue requests, which toggles state 
-  c.Request()
-  c.Request()
-  c.Request()
-  c.Request()
-# end
+bob = UserOfTVController.new
+bob.use_controller

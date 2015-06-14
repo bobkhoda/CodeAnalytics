@@ -1,8 +1,9 @@
 require 'find'
 require 'json'
+
 class PathDecomposer
   def initialize(path, exclusion_regex = /\..*\//)
-    @all_path_contents = Find.find(@path)
+    @all_path_contents_enum = Find.find(path)
     @path_map = {}
     @extention_types = Hash.new(0)
     @path = path
@@ -39,7 +40,7 @@ class PathDecomposer
   private
 
     def build_hash_of_extentions
-      @all_path_contents do |directories_and_files|
+      @all_path_contents_enum.each do |directories_and_files|
         if File.file?(directories_and_files)
           filename = directories_and_files
           build_hash_of_extentions_and_count(filename)
@@ -64,16 +65,3 @@ class PathDecomposer
     end
 
 end
-
-
-
-    # puts "total: #{@extention_types.values.reduce(:+)}"
-    # b = @extention_types.values.reduce(:+)
-    # temp = @extention_types
-    # temp.delete(:no_extention)
-    # a = temp.values.reduce(:+)
-    # dif = b - a
-    # puts "total without no_extention: #{temp.values.reduce(:+)}"
-    # puts "dif: #{dif}"
-
-
