@@ -1,50 +1,58 @@
-#"TV" 
+#"TV abstraction do I need this???" 
 # class TVAbstraction
-#   def toggle(TVController)
+#   def initialize
+#     @@called = 0
+#   end
+
+#   def toggle(tv_controller)
 #   end
 # end
 
-#"On" 
+#"On state" 
 class On #< TVAbstraction
   def toggle(tv_controller)
-    puts "On -> Off"
+    # @@called += 1
     tv_controller.state = Off.new
   end
+  # def called
+  #   puts "called: #{@@called}"
+  # end
 end
 
-#"Off" 
+#"Off state" 
 class Off #< TVAbstraction
   def toggle(tv_controller)
-    puts "Off -> On"
+    # @@called += 1
     tv_controller.state = On.new
   end
+  # def called
+  #   puts "called: #{@@called}"
+  # end
 end
 
 #"TVController" 
 class TVController
-  #Constructor 
   attr_accessor :state
   def initialize(state)
     @state = state;
   end
 
   def push_power_button
-    state.toggle(self);
+    puts "current state: #{@state.class.name}"
+    state.toggle(self)
+    puts "state after toggle: #{@state.class.name}\r"
   end
 end
 
 class UserOfTVController
-#Setup TVController in an initial state 
   def initialize
+    #Setup TVController in an initial state 
     @tv_controller = TVController.new(Off.new)
   end
 
   def use_controller
     #call push_power_buttons, which toggles state 
-    @tv_controller.push_power_button()
-    @tv_controller.push_power_button()
-    @tv_controller.push_power_button()
-    @tv_controller.push_power_button()
+    (1..5).each{@tv_controller.push_power_button()}
   end
 end
 
