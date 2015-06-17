@@ -1,9 +1,6 @@
-#"TV abstraction do I need this???" 
+#TV abstraction do I need this???" 
 # class TVAbstraction
-#   def initialize
-#     @@called = 0
-#   end
-
+#   @@called = 0
 #   def toggle(tv_controller)
 #   end
 # end
@@ -40,7 +37,9 @@ class TVController
   def push_power_button
     puts "current state: #{@state.class.name}"
     state.toggle(self)
-    puts "state after toggle: #{@state.class.name}\r"
+    puts "state after toggle: #{@state.class.name}"
+    # state.called
+    # puts ""
   end
 end
 
