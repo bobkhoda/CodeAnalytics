@@ -4,40 +4,54 @@ require 'json'
 class PathDecomposer
   def initialize(path, exclusion_regex = /\..*\//)
     @all_path_contents_enum = Find.find(path)
-    @path_map = {}
     @extention_types = Hash.new(0)
     @path = path
     @exclusion_regex = exclusion_regex
+    @files = []
     build_hash_of_extentions
+    build_array_of_files
   end
 
-  def output_extention_types_and_counts(filename)
-    begin
-      file = File.open(filename, "w+") 
-      get_sorted_extention_list.each do |key, value|
-        file << "#{key}\t#{value}\n"
-      end
-    rescue => error
-      puts error
-    ensure
-      file.close
-    end
+  def get_extention_type_hash
+    @extention_types.dup
   end
 
-  def output_extention_types_and_counts_to_json(filename)
-    begin
-      file = File.open(filename, "w") 
-      file << JSON.generate(@extention_types)
-    rescue => error
-      puts error
-    end
+  def get_sorted_extention_list(hash_to_sort)
+    sort_list(hash_to_sort)
   end
 
-  def get_total_file_count
-    @extention_types.values.reduce(:+)
+  def get_files(extention = "")
+    extention == "" ? @files.dup : build_array_of_file_by_extention(extention)
+  end
+
+  def sort_list(hash_to_sort)
+    hash_to_sort.sort_by {|k,v| -v}
+  end
+
+  def get_all_extentions
+    @extention_types.keys
   end
 
   private
+
+    def build_array_of_file_by_extention(extention)
+      extention_regex = /^.*#{extention}$/
+      temp_file_array = []
+      @all_path_contents_enum.each do |directories_and_files|
+        if File.file?(directories_and_files)
+          temp_file_array << directories_and_files if directories_and_files =~ extention_regex
+        end
+      end
+      temp_file_array
+    end
+
+    def build_array_of_files
+      @all_path_contents_enum.each do |directories_and_files|
+        if File.file?(directories_and_files)
+          @files << directories_and_files
+        end
+      end
+    end
 
     def build_hash_of_extentions
       @all_path_contents_enum.each do |directories_and_files|
@@ -59,9 +73,4 @@ class PathDecomposer
         end
       end
     end
-
-    def get_sorted_extention_list
-      @extention_types.sort_by {|k,v| -v}
-    end
-
 end
