@@ -1,86 +1,47 @@
 require_relative 'path_decomposer'
+require_relative 'analytics_writer'
 
-class Counter
+class Analyzer
   def initialize
-    @path_decomposer = PathDecomposer.new("/trunk")
-    @extention_types = @path_decomposer.get_extention_type_hash
-    @lines_by_file = Hash.new("")
-  end
-
-  def output_extention_types_and_counts(filename)
-    begin
-      file = File.open(filename, "w+") 
-      @path_decomposer.get_sorted_extention_list(@extention_types).each do |key, value|
-        file << "#{key}\t#{value}\n"
-      end
-    rescue => error
-      puts error
-    ensure
-      file.close
-    end
-  end
-
-  def output_extention_types_and_counts_to_json(filename)
-    begin
-      file = File.open(filename, "w") 
-      file << JSON.generate(@extention_types)
-    rescue => error
-      puts error
-    end
+    @path_decomposer = PathDecomposer.new('/stuff')
+    @files_fullpath = @path_decomposer.get_files_fullpath
+    @extentions = @path_decomposer.get_extentions
   end
 
   def build_line_count_by_file_type(file_type)
-    @path_decomposer.get_files(file_type).each do |filename|
+    lines_by_file = Hash.new(0)
+    @path_decomposer.get_files_fullpath(file_type).each do |filename|
       begin
-        file = File.open(filename) {|f| @lines_by_file[filename] = f.count}
+        file = File.open(filename) {|f| lines_by_file[filename] = f.count}
       rescue => error
         puts error
       end
     end
-    @lines_by_file
+    lines_by_file
   end
 
-  def write_line_count_by_file_type(filename, file_type)
-    temp_file_count_hash = build_line_count_by_file_type(file_type).sort_by {|k,v| -v}
-    begin
-      file = File.open(filename, "w+") 
-      temp_file_count_hash.each do |key, value|
-        file << "#{key}\t#{value}\n"
-      end
-    rescue => error
-      puts error
-    ensure
-      file.close
+  def build_extention_count(filenames = @files_fullpath)
+    extention_types = Hash.new(0)
+    filenames.each do |filename|
+      file_parts = filename.split(".")
+      file_parts.length > 1 ? extention_types[:"#{file_parts.last}"] += 1 : extention_types[:"no_extention"] += 1
     end
+    extention_types
   end
 
   def get_total_file_count
-    @extention_types.values.reduce(:+)
+    @files_fullpath.count
   end
 
-  def get_files(file)
-    @path_decomposer.get_files(file)
-  end
-
-  def get_all_files
-    @path_decomposer.get_files
-  end
-
-  def get_all_extentions
-    @path_decomposer.get_all_extentions
+  def sort_hash(hash_to_sort)
+    hash_to_sort.sort_by {|k,v| -v}
   end
 end
 
-
-counter = Counter.new
-counter.output_extention_types_and_counts("test.json")
-# counter.write_line_count_by_file_type("test.txt", "cfc")
-puts counter.get_total_file_count
-
-['cfc', 'cfm', 'xml'].each do |file_type|
-  counter.write_line_count_by_file_type("test.txt", file_type)
-end
-# puts counter.get_files("cfc")
-# a = counter.build_line_count_by_file_type("cfc").sort_by {|k,v| -v}
-# a.each {|k,v| puts "filename: #{k} \tlines: #{v}"}
-# puts counter.get_all_files
+pd = PathDecomposer.new('/stuff')
+an = Analyzer.new
+aw = AnalyticsWriter.new
+# puts pd.get_files_fullpath
+puts pd.get_extentions
+# puts an.build_extention_count
+aw.write_analytics_hash(an.build_line_count_by_file_type('cfc'), 'test.txt')
